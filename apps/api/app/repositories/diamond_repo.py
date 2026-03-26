@@ -22,3 +22,6 @@ def update_diamond_stage(db: Session, diamond_id: str, new_stage: str):
     db.commit()
     db.refresh(diamond)
     return diamond
+    
+def get_all_diamonds(db):
+    return db.query(Diamond).all()
