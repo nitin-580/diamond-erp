@@ -14,5 +14,6 @@ class Diamond(Base):
 
     status = Column(String, default="in_progress")
     current_worker_id = Column(String, nullable=True)
-
+    
+    stage_started_at = Column(DateTime(timezone=True), server_default=func.now())
     created_at = Column(DateTime(timezone=True), server_default=func.now())

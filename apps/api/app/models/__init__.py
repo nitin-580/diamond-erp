@@ -2,3 +2,7 @@ from .diamond import Diamond
 from .worker import Worker
 from .assignment import Assignment
 from .process_log import ProcessLog
+from .user import User
+from .alert import Alert
+from .worker_location import WorkerLocation
+from .process_definition import ProcessDefinition
