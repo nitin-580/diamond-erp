@@ -25,5 +25,5 @@ def login_user(db, email, password):
     if not user or not verify_password(password, user.password_hash):
         raise Exception("Invalid credentials")
 
-    token = create_access_token({"sub": user.id, "role": user.role})
+    token = create_access_token({"sub": user.id, "role": user.role, "worker_id": user.worker_id})
     return {"access_token": token}

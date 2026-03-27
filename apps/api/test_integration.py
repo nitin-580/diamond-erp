@@ -156,3 +156,92 @@ def test_22_dashboard_alerts():
     response = client.get("/dashboard/alerts", headers=headers)
     assert response.status_code == 200
     assert isinstance(response.json(), list)
+
+def test_23_create_process_definition():
+    login_response = client.post(f"/auth/login?email={EMAIL}&password={PASSWORD}")
+    token = login_response.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    payload = {
+        "name": "custom_polishing",
+        "description": "High precision polishing",
+        "expected_duration": 45
+    }
+    response = client.post("/process/create", json=payload, headers=headers)
+    assert response.status_code == 200
+    assert response.json()["name"] == "custom_polishing"
+
+def test_24_get_all_processes():
+    response = client.get("/process/all")
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+    assert any(p["name"] == "custom_polishing" for p in response.json())
+
+def test_25_get_diamond_status():
+    response = client.get(f"/diamond/{DIAMOND_ID}/status")
+    assert response.status_code == 200
+    assert "is_delayed" in response.json()
+    assert response.json()["current_stage"] == "cutting"
+
+def test_26_add_manual_incentive():
+    login_response = client.post(f"/auth/login?email={EMAIL}&password={PASSWORD}")
+    token = login_response.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    payload = {
+        "worker_id": WORKER_ID,
+        "diamond_id": DIAMOND_ID,
+        "amount": 150.0
+    }
+    response = client.post("/incentive/add", json=payload, headers=headers)
+    assert response.status_code == 200
+    assert response.json()["amount"] == 150.0
+
+def test_27_get_worker_incentives():
+    login_response = client.post(f"/auth/login?email={EMAIL}&password={PASSWORD}")
+    token = login_response.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    response = client.get(f"/incentive/worker/{WORKER_ID}", headers=headers)
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+    assert any(i["amount"] == 150.0 for i in response.json())
+
+def test_28_get_monthly_incentives():
+    login_response = client.post(f"/auth/login?email={EMAIL}&password={PASSWORD}")
+    token = login_response.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    import datetime
+    now = datetime.datetime.now()
+    response = client.get(f"/incentive/monthly/{WORKER_ID}?month={now.month}&year={now.year}", headers=headers)
+    assert response.status_code == 200
+    assert isinstance(response.json(), list)
+
+def test_29_get_total_incentive():
+    login_response = client.post(f"/auth/login?email={EMAIL}&password={PASSWORD}")
+    token = login_response.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    response = client.get(f"/incentive/total/{WORKER_ID}", headers=headers)
+    assert response.status_code == 200
+    assert "total_incentive" in response.json()
+    assert response.json()["total_incentive"] >= 150.0
+
+def test_30_automatic_incentive_on_completion():
+    # Set diamond to completed
+    payload = {
+        "diamond_id": DIAMOND_ID,
+        "new_stage": "completed"
+    }
+    response = client.post("/diamond/update-stage", json=payload)
+    assert response.status_code == 200
+    
+    # Check if total incentive increased (previous 150 + 100 default)
+    login_response = client.post(f"/auth/login?email={EMAIL}&password={PASSWORD}")
+    token = login_response.json()["access_token"]
+    headers = {"Authorization": f"Bearer {token}"}
+    
+    response = client.get(f"/incentive/total/{WORKER_ID}", headers=headers)
+    assert response.status_code == 200
+    assert response.json()["total_incentive"] >= 250.0

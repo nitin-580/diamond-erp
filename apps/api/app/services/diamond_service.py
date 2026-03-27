@@ -53,4 +53,9 @@ def update_stage(db: Session, diamond_id: str, new_stage: str):
         "is_skipped": is_skipped
     })
 
+    # 5. Handle Incentives (Integration)
+    if new_stage == "completed" and updated.current_worker_id:
+        from app.services.incentive_service import add_incentive
+        add_incentive(db, updated.current_worker_id, diamond_id)
+
     return updated
