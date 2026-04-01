@@ -1,5 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+import uuid
+import time
 
 from app.repositories.diamond_repo import (
     create_diamond,
@@ -45,7 +47,7 @@ def update_stage(db: Session, diamond_id: str, new_stage: str):
 
     # 4. Create process log
     create_process_log(db, {
-        "id": f"log_{diamond_id}_{new_stage}_{int(func.now().timestamp())}",
+        "id": f"log_{diamond_id}_{new_stage}_{int(time.time())}_{str(uuid.uuid4())[:8]}",
         "diamond_id": diamond_id,
         "from_stage": old_stage,
         "to_stage": new_stage,

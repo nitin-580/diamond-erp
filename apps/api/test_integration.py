@@ -11,6 +11,7 @@ PASSWORD = "password123"
 ROLE = "admin"
 DIAMOND_ID = f"D-{uuid.uuid4().hex[:6]}"
 WORKER_ID = f"W-{uuid.uuid4().hex[:6]}"
+PROCESS_NAME = f"proc_{uuid.uuid4().hex[:6]}"
 
 def test_01_register():
     response = client.post("/auth/register", params={"email": EMAIL, "password": PASSWORD, "role": ROLE})
@@ -163,19 +164,19 @@ def test_23_create_process_definition():
     headers = {"Authorization": f"Bearer {token}"}
     
     payload = {
-        "name": "custom_polishing",
+        "name": PROCESS_NAME,
         "description": "High precision polishing",
         "expected_duration": 45
     }
     response = client.post("/process/create", json=payload, headers=headers)
     assert response.status_code == 200
-    assert response.json()["name"] == "custom_polishing"
+    assert response.json()["name"] == PROCESS_NAME
 
 def test_24_get_all_processes():
     response = client.get("/process/all")
     assert response.status_code == 200
     assert isinstance(response.json(), list)
-    assert any(p["name"] == "custom_polishing" for p in response.json())
+    assert any(p["name"] == PROCESS_NAME for p in response.json())
 
 def test_25_get_diamond_status():
     response = client.get(f"/diamond/{DIAMOND_ID}/status")

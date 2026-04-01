@@ -11,6 +11,8 @@ def assign_diamond(db, diamond_id, worker_id):
     if not worker:
         raise Exception("Worker not found")
 
-    # optional: prevent duplicate assignment later
+    # 3. Update diamond with current worker
+    diamond.current_worker_id = worker_id
+    db.commit()
 
     return create_assignment(db, diamond_id, worker_id)
